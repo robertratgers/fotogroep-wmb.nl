@@ -1,0 +1,50 @@
+DirectoryIndex index.php
+
+Options -Indexes -MultiViews
+RewriteEngine On
+
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set X-Frame-Options "SAMEORIGIN"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+  Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+</IfModule>
+
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 month"
+  ExpiresByType image/svg+xml "access plus 1 month"
+  ExpiresByType image/png "access plus 1 month"
+  ExpiresByType application/pdf "access plus 1 month"
+</IfModule>
+
+# Interne mappen afschermen
+RewriteRule ^api/includes(/|$) - [F,L]
+RewriteRule ^api/berichten(/|$) - [F,L]
+RewriteRule ^includes(/|$) - [F,L]
+
+# .php verbergen in de adresbalk (GET)
+RewriteCond %{THE_REQUEST} \s/+index\.php([?\s]) [NC]
+RewriteRule ^ / [R=301,L]
+
+RewriteCond %{THE_REQUEST} \s/+api/(challenge|contact|zegel)\.php([?\s]) [NC]
+RewriteRule ^api/(challenge|contact|zegel)\.php$ /api/$1 [R=301,L]
+
+RewriteCond %{THE_REQUEST} \s/+(.+?)\.php([?\s]) [NC]
+RewriteCond %{REQUEST_URI} !^/api/ [NC]
+RewriteRule ^ /%1 [R=301,L]
+
+# API zonder extensie
+RewriteRule ^api/challenge/?$ api/challenge.php [L,QSA]
+RewriteRule ^api/contact/?$ api/contact.php [L,QSA]
+RewriteRule ^api/zegel/?$ api/zegel.php [L,QSA]
+
+# Bestaande bestanden en mappen laten staan
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Alle overige paden (menu/secties) → homepage, voorkomt directory-fouten
+RewriteRule ^ index.php [L,QSA]
